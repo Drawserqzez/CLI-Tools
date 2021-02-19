@@ -48,13 +48,15 @@ namespace Draws.CLI {
         private bool IsCommandCorrect(ICommand command, string[] args) {
             string verb = args[0];
 
-            // BUG: command.GetType().GetCustomAttributes() returns null somehow?
-            Attribute[] attributes = (command.GetType().GetCustomAttributes(true) as Attribute[]).ToArray();
+            IEnumerable<Attribute> attributes = command.GetType().GetCustomAttributes(true).Where(x => x is Attribute).Select(x => x as Attribute);
             CommandAttribute commandInfo = attributes.FirstOrDefault(x => x is CommandAttribute) as CommandAttribute;
-            IEnumerable<ArgumentAttribute> argumentAttributes = attributes.Where(x => x is ArgumentAttribute) as IEnumerable<ArgumentAttribute>;
+            IEnumerable<ArgumentAttribute> argumentAttributes = attributes.Where(x => x is ArgumentAttribute).Select(x => x as ArgumentAttribute);
 
             if (commandInfo.CommandName == verb) {
                 try {
+                    if (commandInfo.IsSingleArgument)
+                        args[0] = $"--{verb}";
+
                     command.SetArguments(DetermineArguments(argumentAttributes, args));
                     return true;
                 }
@@ -71,10 +73,12 @@ namespace Draws.CLI {
             return false;
         }
 
-        public ICommand Parse(string[] args) {
+        public void Parse(string[] args) {
             foreach (ICommand cmd in _commands) {
-                if (IsCommandCorrect(cmd, args))
-                    return cmd;
+                if (IsCommandCorrect(cmd, args)) {
+                    _output.Invoke(cmd.RunCommand());
+                    return;
+                }
             }
 
             _output.Invoke("No command with that name was found.");

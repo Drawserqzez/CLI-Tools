@@ -10,7 +10,7 @@ namespace Draws.CLI.Tests
     public class ParserTests
     {
         [Command("echo", "This echoes the first argument", isSingleArgument: true)]
-        [Argument("echo", "The string that is echoed.", false, true, 'e')]
+        [Argument("echo", "The string that is echoed.", isFlag: false, required: true, 'e')]
         private class EchoCommand : ICommand {
             private Dictionary<string, string> _args;
             
@@ -32,7 +32,7 @@ namespace Draws.CLI.Tests
             string result = "";
             CommandParser sut = new CommandParser(new [] { testCommand }, (string output) => result = output);
             // Act
-            sut.Parse(new[] { "echo", "Echoed string" }).RunCommand();
+            sut.Parse(new[] { "echo", "Echoed string" });
 
             // Assert
             result.Should().Be("Echoed string");
