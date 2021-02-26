@@ -25,12 +25,25 @@ namespace Draws.CLI.Tests
             }
         }
 
+        private class TestOutputHandler : IOutputHandler
+        {
+            public Action<string> OutputAction { get; set; }
+
+            public void Output(string output) {
+                OutputAction(output);
+            }
+        }
+
         [Fact]
         public void Does_parser_use_correct_command_with_long_name() {
             // Arrange
-            EchoCommand testCommand = new EchoCommand();
             string result = "";
-            CommandParser sut = new CommandParser(new [] { testCommand }, (string output) => result = output);
+            Action<string> outputAction = (string output) => result = output;
+            EchoCommand testCommand = new EchoCommand();
+            TestOutputHandler output = new TestOutputHandler();
+            output.OutputAction = outputAction;
+
+            CommandParser sut = new CommandParser(new [] { testCommand }, output);
             // Act
             sut.Parse(new[] { "echo", "Echoed string" });
 

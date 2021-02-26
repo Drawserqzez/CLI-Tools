@@ -5,11 +5,11 @@ using System.Linq;
 namespace Draws.CLI {
     public class CommandParser {
         private IEnumerable<ICommand> _commands;
-        private Action<string> _output; 
+        private IOutputHandler _outputHandler;
 
-        public CommandParser(IEnumerable<ICommand> commands, Action<string> outputAction) {
+        public CommandParser(IEnumerable<ICommand> commands, IOutputHandler outputHandler) {
             _commands = commands;
-            _output = outputAction;
+            _outputHandler = outputHandler;
         }
 
         private Dictionary<string, string> DetermineArguments(IEnumerable<ArgumentAttribute> argumentAttributes, string[] args) {
@@ -62,7 +62,7 @@ namespace Draws.CLI {
                 }
                 catch (Exception e) {
                     if (e is ArgumentException) {
-                        _output.Invoke(e.Message);
+                        _outputHandler.Output(e.Message);
                         return true;
                     }
 
@@ -76,12 +76,12 @@ namespace Draws.CLI {
         public void Parse(string[] args) {
             foreach (ICommand cmd in _commands) {
                 if (IsCommandCorrect(cmd, args)) {
-                    _output.Invoke(cmd.RunCommand());
+                    _outputHandler.Output(cmd.RunCommand());
                     return;
                 }
             }
 
-            _output.Invoke("No command with that name was found.");
+            _outputHandler.Output("No command with that name was found.");
             throw new ArgumentException();
         }
     }
