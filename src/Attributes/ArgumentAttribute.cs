@@ -1,6 +1,7 @@
 using System;
 
 namespace Draws.CLI {
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class ArgumentAttribute : Attribute {
         public string ArgumentName { get; private set; }
         public string HelpText { get; private set; }
