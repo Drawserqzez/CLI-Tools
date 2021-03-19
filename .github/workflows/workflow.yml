@@ -26,7 +26,7 @@ jobs:
       - name: Build
         run: dotnet build ./src/ --no-restore
       - name: Test
-        run: dotnet test ../Tests/ --no-build --verbosity normal
+        run: dotnet test ./Tests/ --no-build --verbosity normal
 
       - name: Generate NuGet package
         run: dotnet pack ./src/ -c Release -o out
