@@ -39,11 +39,13 @@ namespace Draws.CLI.Tests
             // Arrange
             string result = "";
             Action<string> outputAction = (string output) => result = output;
+
             EchoCommand testCommand = new EchoCommand();
             TestOutputHandler output = new TestOutputHandler();
             output.OutputAction = outputAction;
 
             CommandParser sut = new CommandParser(new [] { testCommand }, output);
+
             // Act
             sut.Parse(new[] { "echo", "Echoed string" });
 
