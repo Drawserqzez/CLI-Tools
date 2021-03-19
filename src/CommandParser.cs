@@ -5,11 +5,11 @@ using System.Linq;
 namespace Draws.CLI {
     public class CommandParser {
         private IEnumerable<ICommand> _commands;
-        private Action<string> _output; 
+        private IOutputHandler _outputHandler;
 
-        public CommandParser(IEnumerable<ICommand> commands, Action<string> outputAction) {
+        public CommandParser(IEnumerable<ICommand> commands, IOutputHandler outputHandler) {
             _commands = commands;
-            _output = outputAction;
+            _outputHandler = outputHandler;
         }
 
         private Dictionary<string, string> DetermineArguments(IEnumerable<ArgumentAttribute> argumentAttributes, string[] args) {
@@ -48,19 +48,21 @@ namespace Draws.CLI {
         private bool IsCommandCorrect(ICommand command, string[] args) {
             string verb = args[0];
 
-            // BUG: command.GetType().GetCustomAttributes() returns null somehow?
-            Attribute[] attributes = (command.GetType().GetCustomAttributes(true) as Attribute[]).ToArray();
+            IEnumerable<Attribute> attributes = command.GetType().GetCustomAttributes(true).Where(x => x is Attribute).Select(x => x as Attribute);
             CommandAttribute commandInfo = attributes.FirstOrDefault(x => x is CommandAttribute) as CommandAttribute;
-            IEnumerable<ArgumentAttribute> argumentAttributes = attributes.Where(x => x is ArgumentAttribute) as IEnumerable<ArgumentAttribute>;
+            IEnumerable<ArgumentAttribute> argumentAttributes = attributes.Where(x => x is ArgumentAttribute).Select(x => x as ArgumentAttribute);
 
             if (commandInfo.CommandName == verb) {
                 try {
+                    if (commandInfo.IsSingleArgument)
+                        args[0] = $"--{verb}";
+
                     command.SetArguments(DetermineArguments(argumentAttributes, args));
                     return true;
                 }
                 catch (Exception e) {
                     if (e is ArgumentException) {
-                        _output.Invoke(e.Message);
+                        _outputHandler.Output(e.Message);
                         return true;
                     }
 
@@ -71,13 +73,15 @@ namespace Draws.CLI {
             return false;
         }
 
-        public ICommand Parse(string[] args) {
+        public void Parse(string[] args) {
             foreach (ICommand cmd in _commands) {
-                if (IsCommandCorrect(cmd, args))
-                    return cmd;
+                if (IsCommandCorrect(cmd, args)) {
+                    _outputHandler.Output(cmd.RunCommand());
+                    return;
+                }
             }
 
-            _output.Invoke("No command with that name was found.");
+            _outputHandler.Output("No command with that name was found.");
             throw new ArgumentException();
         }
     }

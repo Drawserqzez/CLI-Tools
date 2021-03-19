@@ -1,0 +1,35 @@
+on: 
+  push:
+    branches: [ $default-branch ]
+  pull_request:
+    types: [closed]
+    branches: [ $default-branch ]
+
+jobs:
+  build: 
+    runs-on: ubuntu-latest
+    name: Build and publish nuget package
+    steps: 
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup .NET Latest
+        uses: actions/setup-dotnet@v1
+        with: 
+          dotnet-version: 5.0.x
+          source-url: https://nuget.pkg.github.com/Drawserqzez/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN}}
+
+      - name: Restore dependencies
+        run: dotnet restore ./src/
+      - name: Build
+        run: dotnet build ./src/ --no-restore
+      - name: Test
+        run: dotnet test ../Tests/ --no-build --verbosity normal
+
+      - name: Generate NuGet package
+        run: dotnet pack ./src/ -c Release -o out
+      
+      - name: Push package to Github registry
+        run: dotnet nuget push ./out/*.nupkg -k ${GITHUB_TOKEN} -s https://nuget.pkg.github.com/Drawserqzez/index.json --skip-duplicate --no-symbols
