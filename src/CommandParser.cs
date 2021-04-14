@@ -38,7 +38,7 @@ namespace Draws.CLI {
                     commandArguments.Add(argument.ArgumentName, value);
                 }
                 else {
-                    string value = (arg != null) ? "true" : "false";
+                    string value = (argsList.Contains(arg)) ? "true" : "false";
                     commandArguments.Add(argument.ArgumentName, value);
                 }
             }
