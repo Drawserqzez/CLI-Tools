@@ -5,7 +5,7 @@
     <RootNamespace>Draws.CLI</RootNamespace>
     <PackageId>Draws.CLI</PackageId>
     <Title>Draws.CLI</Title>
-    <Version>0.1.0.2</Version>
+    <Version>0.1.1a</Version>
     <Authors>Algot Holton</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/Drawserqzez/CLI</RepositoryUrl>
