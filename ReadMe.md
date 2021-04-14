@@ -1,4 +1,4 @@
-# CLI-Tools
+# Draws.CLI
 
 This is just a repo to help organise some reusable stuff for CLI programs so that I don't have to rewrite everything all the time ✌
 
